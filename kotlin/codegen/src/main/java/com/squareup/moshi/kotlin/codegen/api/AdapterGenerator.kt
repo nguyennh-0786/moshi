@@ -16,8 +16,6 @@
 package com.squareup.moshi.kotlin.codegen.api
 
 import com.squareup.kotlinpoet.ARRAY
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -82,7 +80,8 @@ internal class AdapterGenerator(
       nameAllocator.newName("options"), JsonReader.Options::class.asTypeName(),
       KModifier.PRIVATE)
       .initializer("%T.of(${nonTransientProperties.joinToString(", ") {
-        CodeBlock.of("%S", it.jsonName).toString()
+        // We manually put in quotes because we know the jsonName is already escaped
+        CodeBlock.of("\"%L\"", it.jsonName).toString()
       }})", JsonReader.Options::class.asTypeName())
       .build()
 
@@ -328,7 +327,8 @@ internal class AdapterGenerator(
 
     result.addStatement("%N.beginObject()", writerParam)
     nonTransientProperties.forEach { property ->
-      result.addStatement("%N.name(%S)", writerParam, property.jsonName)
+      // We manually put in quotes because we know the jsonName is already escaped
+      result.addStatement("%N.name(\"%L\")", writerParam, property.jsonName)
       result.addStatement("%N.toJson(%N, %N.%L)",
           nameAllocator[property.delegateKey], writerParam, valueParam, property.name)
     }
